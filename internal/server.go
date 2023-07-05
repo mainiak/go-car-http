@@ -2,16 +2,29 @@ package internal
 
 import (
 	"embed"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
+	"github.com/ipfs/go-cid"
+	"github.com/ipld/go-car/v2"
 )
 
 //go:embed index.tmpl
 var embedFS embed.FS
 
-func Serve() {
+func root_cid_mw(root_cid cid.Cid) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Pass storage
+		c.Set("root_cid", root_cid)
+
+		// Process the request
+		c.Next()
+	}
+}
+
+func Serve(br *car.BlockReader, root_cid cid.Cid) {
 	index_tmpl, _ := embedFS.ReadFile("index.tmpl")
 
 	mr := multitemplate.NewRenderer()
@@ -25,14 +38,23 @@ func Serve() {
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index", gin.H{
 			"Title": "go-car-http",
-			"H1":    "go-car-http",
-			"BodyP": "Demo go-car-http.",
+			"H1":    "Demo go-car-http",
+			//"BodyP": fmt.Sprintf("CID: %s, CAR file: %s\n", root_cid, car_str),
+			"BodyP": fmt.Sprintf("CID: %s\n", root_cid),
 		})
 	})
+
+	// TODO: "/info"
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
+
+	rootURL := r.Group("/root")
+	rootURL.Use(root_cid_mw(root_cid))
+	{
+		rootURL.GET("/", serve_car)
+	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

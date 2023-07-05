@@ -87,23 +87,21 @@ func LoadCAR2(path string, root_cid cid.Cid) *blockstore.ReadOnly {
 	}
 	defer robs.Close()
 
-	/*
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-	*/
-
 	size, err := robs.GetSize(context.TODO(), root_cid)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("\n%v -> %v bytes\n", root_cid, size)
 
-	/*
-		block, err := robs.Get(ctx, root_cid)
-		if err != nil {
-			panic(err)
-		}
-	*/
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	block, err := robs.Get(ctx, root_cid)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("block: %s\n", block)
 
 	return robs
 }

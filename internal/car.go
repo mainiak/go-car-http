@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -8,10 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 	carv2 "github.com/ipld/go-car/v2"
+	"github.com/ipld/go-car/v2/blockstore"
 	"github.com/multiformats/go-multicodec"
 )
 
-func LoadCAR(path string, asked_root_cid cid.Cid) *carv2.BlockReader {
+func LoadCAR(path string, asked_root_cid cid.Cid) {
 	fmt.Println("\nFile:", path)
 	f, err := os.Open(path)
 	if err != nil {
@@ -73,8 +75,37 @@ func LoadCAR(path string, asked_root_cid cid.Cid) *carv2.BlockReader {
 	for _, root_cid := range br.Roots {
 		ParseCID(root_cid.String())
 	}
+}
 
-	return br
+func LoadCAR2(path string, root_cid cid.Cid) *blockstore.ReadOnly {
+	robs, err := blockstore.OpenReadOnly(path,
+		blockstore.UseWholeCIDs(true),
+		carv2.ZeroLengthSectionAsEOF(true),
+	)
+	if err != nil {
+		panic(err)
+	}
+	defer robs.Close()
+
+	/*
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+	*/
+
+	size, err := robs.GetSize(context.TODO(), root_cid)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("\n%v -> %v bytes\n", root_cid, size)
+
+	/*
+		block, err := robs.Get(ctx, root_cid)
+		if err != nil {
+			panic(err)
+		}
+	*/
+
+	return robs
 }
 
 func serve_car(c *gin.Context) {

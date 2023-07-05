@@ -8,7 +8,7 @@ import (
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
-	"github.com/ipld/go-car/v2"
+	"github.com/ipld/go-car/v2/blockstore"
 )
 
 //go:embed index.tmpl
@@ -24,7 +24,7 @@ func root_cid_mw(root_cid cid.Cid) gin.HandlerFunc {
 	}
 }
 
-func Serve(br *car.BlockReader, root_cid cid.Cid) {
+func Serve(bs *blockstore.ReadOnly, root_cid cid.Cid) {
 	index_tmpl, _ := embedFS.ReadFile("index.tmpl")
 
 	mr := multitemplate.NewRenderer()

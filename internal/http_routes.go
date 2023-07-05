@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 )
@@ -31,6 +34,20 @@ func req_ipld_storage(c *gin.Context) *IPLD_Storage {
 
 	ipld_storage := obj.(*IPLD_Storage)
 	return ipld_storage
+}
+
+func serve_index(c *gin.Context) {
+	root_cid := req_root_cid(c)
+	if root_cid == cid.Undef {
+		return
+	}
+
+	c.HTML(http.StatusOK, "index", gin.H{
+		"Title": "go-car-http",
+		"H1":    "Demo go-car-http",
+		//"BodyP": fmt.Sprintf("CID: %s, CAR file: %s\n", root_cid, car_str), // XXX
+		"BodyP": fmt.Sprintf("CID: %s\n", root_cid),
+	})
 }
 
 // URL '/info/'

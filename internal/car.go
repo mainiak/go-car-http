@@ -2,20 +2,18 @@ package internal
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
-	carv2 "github.com/ipld/go-car/v2"
 	"github.com/ipld/go-car/v2/storage"
 	dagpb "github.com/ipld/go-codec-dagpb"
 	"github.com/ipld/go-ipld-prime/datamodel"
 	"github.com/ipld/go-ipld-prime/linking"
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
-	"github.com/multiformats/go-multicodec"
 )
 
+/*
 func LoadCAR(path string, asked_root_cid cid.Cid) {
 	fmt.Println("\nFile:", path)
 	f, err := os.Open(path)
@@ -79,6 +77,7 @@ func LoadCAR(path string, asked_root_cid cid.Cid) {
 		ParseCID(root_cid.String())
 	}
 }
+*/
 
 func LoadCAR3(path string, root_cid cid.Cid) {
 	fmt.Printf("%v\n\n", dagpb.Type) // FIXME

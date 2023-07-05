@@ -44,11 +44,6 @@ func get_pblink(pblink dagpb.PBLink) (string, datamodel.Link, int64) {
 }
 
 func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
-	var root_lnk datamodel.Link
-	root_lnk = cidlink.Link{
-		root_cid,
-	}
-
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -98,42 +93,12 @@ func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
 
 	ipld_storage := NewIPLD_Storage(rcar, lctx, lsys)
 
-	// TODO: Split to Get_PBNode() ??
-
-	//np := basicnode.Prototype.Any // NOPE; it works, but not what we need
-	np := dagpb.Type.PBNode
-	lnk := datamodel.Link(root_lnk)
-
-	node, err := lsys.Load(lctx, lnk, np)
+	root_folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {
 		panic(err)
 	}
 
-	/*
-		// XXX
-		fmt.Printf("%v\n", node)
-		fmt.Printf("we loaded a %s with %d entries\n", node.Kind(), node.Length())
-		// XXX
-	*/
-
-	pbnode := node.(dagpb.PBNode)
-	/*
-		// XXX
-		fmt.Printf("%v\n", pbnode)
-		fmt.Printf("we loaded a %s / %s with %d entries\n", pbnode.Kind(), pbnode.Type(), pbnode.Length())
-		// XXX
-	*/
-
-	//fmt.Printf("%v\n", pbnode.Links) // XXX
-	//fmt.Printf("%v\n", pbnode.Data) // XXX
-
-	links := pbnode.Links.Iterator()
-	for i := 0; i < int(pbnode.Links.Length()); i++ {
-		//idx, pb_link := links.Next()
-		//fmt.Printf("idx: %d, ", idx) // no newline on purpose - XXX
-		_, pb_link := links.Next()
-		get_pblink(pb_link)
-	}
+	fmt.Printf("%s\n", root_folder) // XXX
 
 	return ipld_storage
 }

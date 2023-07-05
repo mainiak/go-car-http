@@ -9,10 +9,12 @@
         </tr>
     </thead>
     <tbody>
+        {{ range $file_name, $cid := .files }}
         <tr>
-            <td>File</td>
-            <td>CID</td>
+            <td data-label="File"><a href="{{ $file_name }}">{{ $file_name }}</a></td>
+            <td data-label="CID">{{ $cid }}</td>
         </tr>
+        {{ end }}
     </tbody>
 </table>
 {{ end }}

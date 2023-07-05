@@ -99,6 +99,8 @@ func serve_root(c *gin.Context) {
 		return
 	}
 
-	// FIXME
-	c.JSON(200, gin.H{"files": folder})
+	fmt.Printf("%v\n", folder) // XXX
+	//c.JSON(200, gin.H{"files": folder}) // XXX
+
+	c.HTML(http.StatusOK, "files", gin.H{"files": folder})
 }

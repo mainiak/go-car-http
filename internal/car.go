@@ -10,6 +10,9 @@ import (
 	"github.com/ipfs/go-cid"
 	carv2 "github.com/ipld/go-car/v2"
 	"github.com/ipld/go-car/v2/blockstore"
+	"github.com/ipld/go-car/v2/storage"
+	dagpb "github.com/ipld/go-codec-dagpb"
+	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 	"github.com/multiformats/go-multicodec"
 )
 
@@ -104,6 +107,38 @@ func LoadCAR2(path string, root_cid cid.Cid) *blockstore.ReadOnly {
 	fmt.Printf("block: %s\n", block)
 
 	return robs
+}
+
+func LoadCAR3(path string, root_cid cid.Cid) {
+	fmt.Printf("%v\n\n", dagpb.Type) // FIXME
+
+	f, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	rcar, err := storage.OpenReadable(f)
+	if err != nil {
+		panic(err)
+	}
+
+	roots := rcar.Roots()
+	fmt.Printf("Roots3: \n")
+	for rcid := range roots {
+		fmt.Printf(" - %v\n", rcid)
+	}
+
+	//lctx := linking.LinkContext{}
+	lsys := cidlink.DefaultLinkSystem()
+	lsys.SetReadStorage(rcar)
+
+	//return lsys
 }
 
 func serve_car(c *gin.Context) {

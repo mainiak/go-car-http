@@ -1,17 +1,12 @@
 package internal
 
 import (
-	"embed"
 	"fmt"
 	"net/http"
 
-	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 )
-
-//go:embed index.tmpl
-var embedFS embed.FS
 
 // Gin middleware
 func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
@@ -26,15 +21,8 @@ func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
 }
 
 func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
-	index_tmpl, _ := embedFS.ReadFile("index.tmpl")
-
-	mr := multitemplate.NewRenderer()
-	mr.AddFromString("index", string(index_tmpl))
-
 	r := gin.Default()
-
-	// https://gin-gonic.com/docs/examples/html-rendering/#custom-template-renderer
-	r.HTMLRender = mr
+	r.HTMLRender = get_templates()
 
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index", gin.H{

@@ -168,11 +168,7 @@ func serve_subroot(c *gin.Context) {
 		//ipld_storage.CARR.GetStream(context.TODO(), lnk_str)
 		//c.DataFromReader()
 
-		// FIXME: lnk_str in correct form ??
-		// cid: bafkreib7n73gzo4ijwspokb27odirxkml2yw2iyb3dayybbeeu4hbr7una
-		//bad CID key: invalid cid: invalid cid: expected 1 as the cid version number, got: 98
-
-		data, err := ipld_storage.CARR.Get(context.TODO(), lnk_str)
+		data, err := ipld_storage.CARR.Get(context.TODO(), obj_lnk.Binary())
 		if err != nil {
 			serve_error("Failed to read from CAR file", err, c)
 			return

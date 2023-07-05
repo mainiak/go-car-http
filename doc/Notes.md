@@ -11,6 +11,15 @@
 
 ## CAR files
 
+### Creating CAR file
+
+```
+ipfs add -r folder/
+ipfs dag export <cid> >file.car
+
+## using `car` command (??)
+```
+
 ### CAR CLI
 
 ```

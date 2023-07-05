@@ -27,3 +27,9 @@ go install github.com/mainiak/go-car-http/cmd/go-car-http@latest
 go-car-http <CID> <file.car>
 open http://localhost:8080/root
 ```
+
+## Uninstall
+
+```
+rm -v $(which go-car-http)
+```

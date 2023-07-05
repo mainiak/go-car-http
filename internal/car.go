@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car/v2/storage"
@@ -10,22 +10,8 @@ import (
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 )
 
-func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
-	/*
-	 * `*os.File` supports io.ReadableAt interface needed for CAR factory methods
-	 */
-	f, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := f.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	rcar, err := storage.OpenReadable(f)
+func LoadCAR(car_fd io.ReaderAt, root_cid cid.Cid) *IPLD_Storage {
+	rcar, err := storage.OpenReadable(car_fd)
 	if err != nil {
 		panic(err)
 	}
@@ -62,6 +48,7 @@ func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
 	lsys.SetReadStorage(rcar)
 
 	ipld_storage := NewIPLD_Storage(rcar, lctx, lsys)
+	fmt.Printf("\n%v\n\n", ipld_storage) // XXX !!!
 
 	root_folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {

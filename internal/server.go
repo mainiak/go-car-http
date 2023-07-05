@@ -15,6 +15,7 @@ var embedFS embed.FS
 
 // Gin middleware
 func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
+	fmt.Printf("%v\n", ipld_storage) // XXX
 	return func(c *gin.Context) {
 		// Pass storage
 		c.Set("ipld_storage", ipld_storage)
@@ -26,6 +27,8 @@ func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
 }
 
 func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
+	fmt.Printf("%v\n", ipld_storage) // XXX
+
 	index_tmpl, _ := embedFS.ReadFile("index.tmpl")
 
 	mr := multitemplate.NewRenderer()
@@ -45,8 +48,6 @@ func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
 		})
 	})
 
-	// TODO: "/info"
-
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
@@ -54,7 +55,15 @@ func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
 	rootURL := r.Group("/root")
 	rootURL.Use(root_cid_mw(ipld_storage, root_cid))
 	{
-		rootURL.GET("/", serve_car)
+		rootURL.GET("/", serve_root)
+		// TODO: support any URL bellow/under '/root' -> path parsing
+	}
+
+	infoURL := r.Group("/info")
+	infoURL.Use(root_cid_mw(ipld_storage, root_cid))
+	{
+		infoURL.GET("/", serve_info)
+		// TODO: support any URL bellow/under '/info' -> path parsing
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080

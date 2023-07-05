@@ -13,6 +13,7 @@ import (
 var embedFS embed.FS
 
 // https://gin-gonic.com/docs/examples/html-rendering/#custom-template-renderer
+// alternative to https://gin-gonic.com/docs/examples/bind-single-binary-with-template/
 func get_templates() multitemplate.Renderer {
 	base_tmpl, _ := embedFS.ReadFile("templates/base.tmpl")
 	base_tmpl_str := string(base_tmpl)

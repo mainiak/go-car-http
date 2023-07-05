@@ -102,5 +102,9 @@ func serve_root(c *gin.Context) {
 	fmt.Printf("%v\n", folder) // XXX
 	//c.JSON(200, gin.H{"files": folder}) // XXX
 
-	c.HTML(http.StatusOK, "files", gin.H{"files": folder})
+	c.HTML(http.StatusOK, "files", gin.H{
+		"files":      folder,
+		"full_path":  c.FullPath(),
+		"folder_cid": root_cid.String(),
+	})
 }

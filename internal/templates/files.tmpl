@@ -1,6 +1,9 @@
 {{ define "content" }}
-<div>Folder path: TBD</div>
-<div>Folder CID: TBD</div>
+<p>
+<div>Folder path: {{ .full_path }}</div>
+<div>Folder CID: {{ .folder_cid }}</div>
+</p>
+
 <table border="1">
     <thead>
         <tr>

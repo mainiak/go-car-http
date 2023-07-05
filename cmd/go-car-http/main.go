@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	//fmt.Printf("Args: %d\nArgs[0]: %s\n", len(os.Args), os.Args[0])
 	if len(os.Args) != 3 {
 		fmt.Printf("%s <cid> <file.car>", os.Args[0])
 	}
@@ -18,7 +17,7 @@ func main() {
 
 	root_cid := internal.ParseCID(cid_str)
 
-	internal.LoadCAR3(car_str, root_cid)
+	internal.LoadCAR(car_str, root_cid)
 
 	//internal.Serve(bs, root_cid)
 }

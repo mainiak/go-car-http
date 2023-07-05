@@ -7,7 +7,10 @@ Plain HTTP server for CAR files
 ## Dev
 
 ```
-go build -o build ./... && ./build/go-car-http
+go build -o build ./... && \
+./build/go-car-http \
+bafybeifg2xqiapzayizkm652rntpqlq5dxxnbq3u7k7uim3dyvwq7cuugy \
+data/demo_folder.car
 ```
 
 ## Install

@@ -1,20 +1,22 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
+	"github.com/multiformats/go-multicodec"
 )
 
 func req_root_cid(c *gin.Context) cid.Cid {
 	obj, exists := c.Get("root_cid")
 
 	if !exists {
-		c.JSON(500, gin.H{
-			"error": "root_cid not found",
-		})
+		serve_error("root_cid not found", nil, c)
+		//c.Abort()
 		return cid.Undef // TODO: Correct error/nil type?
 	}
 
@@ -26,9 +28,8 @@ func req_ipld_storage(c *gin.Context) *IPLD_Storage {
 	obj, exists := c.Get("ipld_storage")
 
 	if !exists {
-		c.JSON(500, gin.H{
-			"error": "ipld_storage not found",
-		})
+		serve_error("ipld_storage not found", nil, c)
+		//c.Abort()
 		return nil
 	}
 
@@ -72,10 +73,7 @@ func serve_files(c *gin.Context) {
 	ipld_storage := req_ipld_storage(c)
 	folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error":  "failed reading root folder",
-			"reason": err,
-		})
+		serve_error("failed reading root folder", err, c)
 		return
 	}
 
@@ -92,10 +90,7 @@ func serve_root(c *gin.Context) {
 	ipld_storage := req_ipld_storage(c)
 	folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error":  "failed reading root folder",
-			"reason": err,
-		})
+		serve_error("failed reading root folder", err, c)
 		return
 	}
 
@@ -109,13 +104,95 @@ func serve_root(c *gin.Context) {
 	})
 }
 
+func serve_error(msg string, err error, c *gin.Context) {
+	fmt.Printf("ERR: %s, reason: %s\n", msg, err)
+	c.JSON(500, gin.H{
+		"error":  msg,
+		"reason": err,
+	})
+	//c.AbortWithError(500, err)
+	c.Abort()
+}
+
+func serve_not_found(c *gin.Context) {
+	request_uri := c.Request.RequestURI
+	c.JSON(404, gin.H{
+		"code":        "PAGE_NOT_FOUND",
+		"message":     "Page not found",
+		"request_uri": request_uri,
+	})
+}
+
 // URL '/root/*'
 func serve_subroot(c *gin.Context) {
 	request_uri := c.Request.RequestURI
+	uri_path_orig := strings.Split(request_uri, "/")[2:]
+	fmt.Printf("uri_path: %v\n", uri_path_orig) // XXX
 
-	// FIXME
-	c.JSON(200, gin.H{
-		"path": request_uri,
-	})
-	// FIXME
+	root_cid := req_root_cid(c)
+	if root_cid == cid.Undef {
+		return
+	}
+
+	ipld_storage := req_ipld_storage(c)
+	folder_cid := root_cid
+	uri_path := uri_path_orig
+
+	// TODO: recurision point starts here
+	// TODO: recursion until len(uri_path) == 0 ... or RAW IPLD object found
+
+	folder, err := ipld_storage.read_folder(folder_cid)
+	if err != nil {
+		serve_error("failed reading root folder", err, c)
+		return
+	}
+
+	// walk uri_path
+	file_name, uri_path := uri_path[0], uri_path[1:]
+	fmt.Printf("file_name: %s\nuri_path: %v\n", file_name, uri_path) // XXX
+
+	obj_lnk, obj_present := folder[file_name]
+	if !obj_present {
+		serve_error("File not found", fmt.Errorf("No such file: %s", file_name), c)
+		return
+	}
+
+	lnk_str := obj_lnk.String()
+	fmt.Printf("lnk: '%s'\n", lnk_str) // XXX
+	obj_cid := ParseCID(lnk_str)
+	obj_codec := multicodec.Code(obj_cid.Prefix().Codec)
+	fmt.Printf("Codec: 0x%04x (%s)\n", uint64(obj_codec), obj_codec)
+
+	// Process 'raw' IPLD objects
+	if obj_codec == multicodec.Raw {
+		//ipld_storage.CARR.GetStream(context.TODO(), lnk_str)
+		//c.DataFromReader()
+
+		// FIXME: lnk_str in correct form ??
+		// cid: bafkreib7n73gzo4ijwspokb27odirxkml2yw2iyb3dayybbeeu4hbr7una
+		//bad CID key: invalid cid: invalid cid: expected 1 as the cid version number, got: 98
+
+		data, err := ipld_storage.CARR.Get(context.TODO(), lnk_str)
+		if err != nil {
+			serve_error("Failed to read from CAR file", err, c)
+			return
+		}
+
+		c.Data(http.StatusOK, "application/octet-stream", data)
+		return
+	}
+
+	/*
+		// TODO: Another folder to recurse?
+		if obj_codec == multicodec.DagPb {
+		}
+
+		// TODO: Convert to structure and serve as JSON
+		if obj_codec == multicodec.DagJson {
+		}
+	*/
+
+	err = fmt.Errorf("codec: 0x%04x (%s)", uint64(obj_codec), obj_codec)
+	serve_error("Codec not supported", err, c)
+	//c.Abort()
 }

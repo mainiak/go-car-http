@@ -55,11 +55,7 @@ func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
 		if strings.HasPrefix(request_uri, "/root/") {
 			serve_subroot(c)
 		} else {
-			c.JSON(404, gin.H{
-				"code":        "PAGE_NOT_FOUND",
-				"message":     "Page not found",
-				"request_uri": request_uri,
-			})
+			serve_not_found(c)
 		}
 	})
 

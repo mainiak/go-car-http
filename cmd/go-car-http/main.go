@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/mainiak/go-car-http/internal"
+)
 
 func main() {
-	fmt.Printf("Hello world!\n")
+	internal.Serve()
 }

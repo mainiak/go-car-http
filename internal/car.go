@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 	carv2 "github.com/ipld/go-car/v2"
-	"github.com/ipld/go-car/v2/blockstore"
 	"github.com/ipld/go-car/v2/storage"
 	dagpb "github.com/ipld/go-codec-dagpb"
 	"github.com/ipld/go-ipld-prime/datamodel"
@@ -80,35 +78,6 @@ func LoadCAR(path string, asked_root_cid cid.Cid) {
 	for _, root_cid := range br.Roots {
 		ParseCID(root_cid.String())
 	}
-}
-
-func LoadCAR2(path string, root_cid cid.Cid) *blockstore.ReadOnly {
-	robs, err := blockstore.OpenReadOnly(path,
-		blockstore.UseWholeCIDs(true),
-		carv2.ZeroLengthSectionAsEOF(true),
-	)
-	if err != nil {
-		panic(err)
-	}
-	defer robs.Close()
-
-	size, err := robs.GetSize(context.TODO(), root_cid)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("\n%v -> %v bytes\n", root_cid, size)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	block, err := robs.Get(ctx, root_cid)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("block: %s\n", block)
-
-	return robs
 }
 
 func LoadCAR3(path string, root_cid cid.Cid) {

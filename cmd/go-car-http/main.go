@@ -19,7 +19,6 @@ func main() {
 	root_cid := internal.ParseCID(cid_str)
 
 	internal.LoadCAR(car_str, root_cid) // TODO: ???
-	//bs := internal.LoadCAR2(car_str, root_cid) // XXX
 	internal.LoadCAR3(car_str, root_cid)
 
 	//internal.Serve(bs, root_cid)

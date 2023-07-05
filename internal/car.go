@@ -13,92 +13,32 @@ import (
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 )
 
-/*
-func LoadCAR(path string, asked_root_cid cid.Cid) {
-	fmt.Println("\nFile:", path)
-	f, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-
-	br, err := carv2.NewBlockReader(f)
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := f.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	fmt.Printf("CAR Version: %d\n", br.Version)
-	fmt.Printf("Roots:\n")
-
-	match_root_cid := false
-	for _, root_cid := range br.Roots {
-		fmt.Printf(" - %s\n", root_cid)
-
-		if asked_root_cid == root_cid {
-			match_root_cid = true
-
-			cid_codec := root_cid.Prefix().Codec
-			code := multicodec.Code(cid_codec)
-			fmt.Printf("Codec: 0x%04x (%s)\n", cid_codec, code)
-
-			if code != multicodec.DagPb {
-				// panic will f.Close() ... because defer
-				panic(fmt.Errorf("CID: %s (%s) is not a DAG-PB", root_cid, code))
-			}
-		}
-	}
-
-	if !match_root_cid {
-		panic(fmt.Errorf("Root CID (%s) not found", asked_root_cid))
-	}
-
-	fmt.Println("First 5 block CIDs:")
-
-	for i := 0; i < 5; i++ {
-		bl, err := br.Next()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			panic(err)
-		}
-
-		c := bl.Cid()
-		fmt.Printf(" - %v\n", c)
-	}
-
-	for _, root_cid := range br.Roots {
-		ParseCID(root_cid.String())
-	}
-}
-*/
-
 func print_pblink(pblink dagpb.PBLink) {
+	var name_str string
+	var lnk datamodel.Link
+	var size int64
+
 	//fmt.Printf("%v // %s\n", pblink, pblink.Kind()) // XXX
 
 	if pblink.Name.Exists() {
 		//fmt.Printf("Name: %s\n", pblink.Name) // XXX
-		name_str := pblink.Name.Must()
+		name_str = pblink.Name.Must().String()
 		fmt.Printf("# name: %s\n", name_str)
 	}
 
 	//fmt.Printf("Hash: %s\n", pblink.Hash) // XXX
 	if !pblink.Hash.IsAbsent() && !pblink.Hash.IsNull() {
-		lnk := pblink.Hash.Link()
+		lnk = pblink.Hash.Link()
 		fmt.Printf("# link: %s\n", lnk)
 	}
 
 	//fmt.Printf("Tsize: %s\n", pblink.Tsize) // XXX
 	if pblink.Tsize.Exists() {
-		size := pblink.Tsize.Must().Int()
+		size = pblink.Tsize.Must().Int()
 		fmt.Printf("# size: %d\n", size)
 	}
+
+	fmt.Printf("[%s, %s, %d]\n", name_str, lnk, size)
 
 	/*
 		if pblink.Kind() == datamodel.Kind_Map {
@@ -135,10 +75,27 @@ func LoadCAR(path string, root_cid cid.Cid) {
 	}
 
 	rcar.Index() // TODO: needed?
-	roots := rcar.Roots()
+
+	/*
+		// FIXME
+		fmt.Printf("CID: %s\n", root_cid) // XXX
+		ParseCID(root_cid.String()) // XXX
+		cid_exists, err := rcar.Has(context.TODO(), root_cid.String())
+		if err != nil {
+			// WTH ?!
+			// CID: bafybeifg2xqiapzayizkm652rntpqlq5dxxnbq3u7k7uim3dyvwq7cuugy
+			//panic: bad CID key: invalid cid: invalid cid: expected 1 as the cid version number, got: 98
+			panic(err)
+		}
+		if !cid_exists {
+			panic(fmt.Errorf("Your requested CID: %s, is not in CAR file.", root_cid))
+		}
+		// FIXME
+	*/
 
 	//fmt.Printf("%v\n", roots) // XXX
 	fmt.Printf("\nRoots: \n")
+	roots := rcar.Roots()
 	for _, rcid := range roots {
 		fmt.Printf(" - %v\n", rcid)
 	}
@@ -147,6 +104,8 @@ func LoadCAR(path string, root_cid cid.Cid) {
 	lctx := linking.LinkContext{}
 	lsys := cidlink.DefaultLinkSystem()
 	lsys.SetReadStorage(rcar)
+
+	// TODO: Split to Get_PBNode() ??
 
 	//np := basicnode.Prototype.Any // NOPE; it works, but not what we need
 	np := dagpb.Type.PBNode

@@ -14,8 +14,8 @@
     <tbody>
         {{ range $file_name, $cid := .files }}
         <tr>
-            <td data-label="File"><a href="{{ $file_name }}">{{ $file_name }}</a></td>
-            <td data-label="CID">{{ $cid }}</td>
+            <td data-label="file"><a href="{{ $file_name }}">{{ $file_name }}</a></td>
+            <td data-label="cid">{{ $cid }}</td>
         </tr>
         {{ end }}
     </tbody>

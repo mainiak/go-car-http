@@ -108,3 +108,14 @@ func serve_root(c *gin.Context) {
 		"folder_cid": root_cid.String(),
 	})
 }
+
+// URL '/root/*'
+func serve_subroot(c *gin.Context) {
+	request_uri := c.Request.RequestURI
+
+	// FIXME
+	c.JSON(200, gin.H{
+		"path": request_uri,
+	})
+	// FIXME
+}

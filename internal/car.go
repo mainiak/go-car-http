@@ -13,7 +13,7 @@ import (
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 )
 
-func print_pblink(pblink dagpb.PBLink) {
+func get_pblink(pblink dagpb.PBLink) (string, datamodel.Link, int64) {
 	var name_str string
 	var lnk datamodel.Link
 	var size int64
@@ -40,19 +40,10 @@ func print_pblink(pblink dagpb.PBLink) {
 
 	fmt.Printf("[%s, %s, %d]\n", name_str, lnk, size)
 
-	/*
-		if pblink.Kind() == datamodel.Kind_Map {
-			mi := pblink.MapIterator()
-			mi_len := int(pblink.Length())
-			for j := 0; j < mi_len; j++ {
-				k, v, e := mi.Next()
-				fmt.Printf("%s %s %s", k, v, e)
-			}
-		}
-	*/
+	return name_str, lnk, size
 }
 
-func LoadCAR(path string, root_cid cid.Cid) {
+func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
 	var root_lnk datamodel.Link
 	root_lnk = cidlink.Link{
 		root_cid,
@@ -105,6 +96,8 @@ func LoadCAR(path string, root_cid cid.Cid) {
 	lsys := cidlink.DefaultLinkSystem()
 	lsys.SetReadStorage(rcar)
 
+	ipld_storage := NewIPLD_Storage(rcar, lctx, lsys)
+
 	// TODO: Split to Get_PBNode() ??
 
 	//np := basicnode.Prototype.Any // NOPE; it works, but not what we need
@@ -139,10 +132,10 @@ func LoadCAR(path string, root_cid cid.Cid) {
 		//idx, pb_link := links.Next()
 		//fmt.Printf("idx: %d, ", idx) // no newline on purpose - XXX
 		_, pb_link := links.Next()
-		print_pblink(pb_link)
+		get_pblink(pb_link)
 	}
 
-	//return lsys
+	return ipld_storage
 }
 
 func serve_car(c *gin.Context) {

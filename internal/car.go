@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 	carv2 "github.com/ipld/go-car/v2"
+	"github.com/multiformats/go-multicodec"
 )
 
 func LoadCAR(path string, asked_root_cid cid.Cid) *carv2.BlockReader {
@@ -37,6 +38,15 @@ func LoadCAR(path string, asked_root_cid cid.Cid) *carv2.BlockReader {
 
 		if asked_root_cid == root_cid {
 			match_root_cid = true
+
+			cid_codec := root_cid.Prefix().Codec
+			code := multicodec.Code(cid_codec)
+			fmt.Printf("Codec: 0x%04x (%s)\n", cid_codec, code)
+
+			if code != multicodec.DagPb {
+				// panic will f.Close() ... because defer
+				panic(fmt.Errorf("CID: %s (%s) is not a DAG-PB", root_cid, code))
+			}
 		}
 	}
 

@@ -15,7 +15,6 @@ var embedFS embed.FS
 
 // Gin middleware
 func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
-	fmt.Printf("%v\n", ipld_storage) // XXX
 	return func(c *gin.Context) {
 		// Pass storage
 		c.Set("ipld_storage", ipld_storage)
@@ -27,8 +26,6 @@ func root_cid_mw(ipld_storage *IPLD_Storage, root_cid cid.Cid) gin.HandlerFunc {
 }
 
 func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
-	fmt.Printf("%v\n", ipld_storage) // XXX
-
 	index_tmpl, _ := embedFS.ReadFile("index.tmpl")
 
 	mr := multitemplate.NewRenderer()
@@ -57,6 +54,12 @@ func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
 	{
 		rootURL.GET("/", serve_root)
 		// TODO: support any URL bellow/under '/root' -> path parsing
+	}
+
+	filesURL := r.Group("/files")
+	filesURL.Use(root_cid_mw(ipld_storage, root_cid))
+	{
+		filesURL.GET("/", serve_files)
 	}
 
 	infoURL := r.Group("/info")

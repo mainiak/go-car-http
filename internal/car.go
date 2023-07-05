@@ -48,7 +48,6 @@ func LoadCAR(car_fd io.ReaderAt, root_cid cid.Cid) *IPLD_Storage {
 	lsys.SetReadStorage(rcar)
 
 	ipld_storage := NewIPLD_Storage(rcar, lctx, lsys)
-	fmt.Printf("\n%v\n\n", ipld_storage) // XXX !!!
 
 	root_folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {

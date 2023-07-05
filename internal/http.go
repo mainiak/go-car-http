@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 )
@@ -31,8 +29,6 @@ func req_ipld_storage(c *gin.Context) *IPLD_Storage {
 		return nil
 	}
 
-	fmt.Printf("%v\n", obj) // XXX
-
 	ipld_storage := obj.(*IPLD_Storage)
 	return ipld_storage
 }
@@ -49,16 +45,14 @@ func serve_info(c *gin.Context) {
 	})
 }
 
-// URL '/root/'
-func serve_root(c *gin.Context) {
+// URL '/files/'
+func serve_files(c *gin.Context) {
 	root_cid := req_root_cid(c)
 	if root_cid == cid.Undef {
 		return
 	}
 
 	ipld_storage := req_ipld_storage(c)
-	fmt.Printf("%v\n", ipld_storage) // XXX
-
 	folder, err := ipld_storage.read_folder(root_cid)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -68,6 +62,26 @@ func serve_root(c *gin.Context) {
 		return
 	}
 
-	//c.JSON(200, gin.H{"status": "test"})
+	c.JSON(200, gin.H{"files": folder})
+}
+
+// URL '/root/'
+func serve_root(c *gin.Context) {
+	root_cid := req_root_cid(c)
+	if root_cid == cid.Undef {
+		return
+	}
+
+	ipld_storage := req_ipld_storage(c)
+	folder, err := ipld_storage.read_folder(root_cid)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error":  "failed reading root folder",
+			"reason": err,
+		})
+		return
+	}
+
+	// FIXME
 	c.JSON(200, gin.H{"files": folder})
 }

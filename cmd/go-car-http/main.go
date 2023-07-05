@@ -31,7 +31,6 @@ func main() {
 
 	root_cid := internal.ParseCID(cid_str)
 	ipld_storage := internal.LoadCAR(car_fd, root_cid)
-	fmt.Printf("%v\n", ipld_storage) // XXX
 
 	internal.Serve(ipld_storage, root_cid)
 }

@@ -2,7 +2,9 @@
 
 ## About
 
-Plain HTTP server for CAR files
+Plain HTTP server for CAR files.  
+Crude implementation as Proof of Concept - not for production.  
+Use at your own risk.
 
 ## Dev
 
@@ -17,4 +19,11 @@ data/demo_folder.car
 
 ```
 go install github.com/mainiak/go-car-http/cmd/go-car-http@latest
+```
+
+## Use
+
+```
+go-car-http <CID> <file.car>
+open http://localhost:8080/root
 ```

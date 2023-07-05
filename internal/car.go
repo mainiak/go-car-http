@@ -4,46 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car/v2/storage"
-	dagpb "github.com/ipld/go-codec-dagpb"
-	"github.com/ipld/go-ipld-prime/datamodel"
 	"github.com/ipld/go-ipld-prime/linking"
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 )
 
-func get_pblink(pblink dagpb.PBLink) (string, datamodel.Link, int64) {
-	var name_str string
-	var lnk datamodel.Link
-	var size int64
-
-	//fmt.Printf("%v // %s\n", pblink, pblink.Kind()) // XXX
-
-	if pblink.Name.Exists() {
-		//fmt.Printf("Name: %s\n", pblink.Name) // XXX
-		name_str = pblink.Name.Must().String()
-		fmt.Printf("# name: %s\n", name_str)
-	}
-
-	//fmt.Printf("Hash: %s\n", pblink.Hash) // XXX
-	if !pblink.Hash.IsAbsent() && !pblink.Hash.IsNull() {
-		lnk = pblink.Hash.Link()
-		fmt.Printf("# link: %s\n", lnk)
-	}
-
-	//fmt.Printf("Tsize: %s\n", pblink.Tsize) // XXX
-	if pblink.Tsize.Exists() {
-		size = pblink.Tsize.Must().Int()
-		fmt.Printf("# size: %d\n", size)
-	}
-
-	fmt.Printf("[%s, %s, %d]\n", name_str, lnk, size)
-
-	return name_str, lnk, size
-}
-
 func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
+	/*
+	 * `*os.File` supports io.ReadableAt interface needed for CAR factory methods
+	 */
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -101,8 +71,4 @@ func LoadCAR(path string, root_cid cid.Cid) *IPLD_Storage {
 	fmt.Printf("%s\n", root_folder) // XXX
 
 	return ipld_storage
-}
-
-func serve_car(c *gin.Context) {
-	c.JSON(200, gin.H{"status": "test"})
 }

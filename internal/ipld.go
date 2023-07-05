@@ -31,6 +31,8 @@ func (is *IPLD_Storage) read_folder(folder_cid cid.Cid) (map[string]datamodel.Li
 		folder_cid,
 	}
 
+	// TODO: test that CID object is using dag-pb codec, before parsing as PBNode
+
 	//np := basicnode.Prototype.Any // NOPE; it works, but not what we need
 	np := dagpb.Type.PBNode
 	lnk := datamodel.Link(folder_lnk)

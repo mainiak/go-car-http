@@ -16,8 +16,7 @@ func main() {
 	car_str := os.Args[2]
 
 	root_cid := internal.ParseCID(cid_str)
+	ipld_storage := internal.LoadCAR(car_str, root_cid)
 
-	internal.LoadCAR(car_str, root_cid)
-
-	//internal.Serve(bs, root_cid)
+	internal.Serve(ipld_storage, root_cid)
 }

@@ -1,7 +1,7 @@
 {{ define "content" }}
 <p>
-<div>Folder path: {{ .full_path }}</div>
-<div>Folder CID: {{ .folder_cid }}</div>
+<div>Folder path: <span data-label="full_path">{{ $full_path := .full_path }}</span></div>
+<div>Folder CID: <span data-label="folder_cid">{{ .folder_cid }}</span></div>
 </p>
 
 <table border="1">
@@ -14,7 +14,7 @@
     <tbody>
         {{ range $file_name, $cid := .files }}
         <tr>
-            <td data-label="file"><a href="{{ $file_name }}">{{ $file_name }}</a></td>
+            <td data-label="file"><a href="{{ $full_path }}{{ $file_name }}">{{ $file_name }}</a></td>
             <td data-label="cid">{{ $cid }}</td>
         </tr>
         {{ end }}

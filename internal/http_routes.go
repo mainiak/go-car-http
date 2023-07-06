@@ -128,6 +128,7 @@ func serve_subroot(c *gin.Context) {
 	request_uri := c.Request.RequestURI
 	uri_path_orig := strings.Split(request_uri, "/")[2:]
 	fmt.Printf("uri_path: %v\n", uri_path_orig) // XXX
+	//fmt.Printf("full_path: %s\n", c.FullPath()) // XXX - not working when handling "not found" requests
 
 	root_cid := req_root_cid(c)
 	if root_cid == cid.Undef {
@@ -135,26 +136,58 @@ func serve_subroot(c *gin.Context) {
 	}
 
 	ipld_storage := req_ipld_storage(c)
+
+	file_name := uri_path_orig[0]
+	uri_path := uri_path_orig[1:]
 	folder_cid := root_cid
-	uri_path := uri_path_orig
 
 	// TODO: recurision point starts here
 	// TODO: recursion until len(uri_path) == 0 ... or RAW IPLD object found
 
+	do_repeat := true
+	for do_repeat {
+
+		do_repeat, folder_cid = walk_folder(c, ipld_storage, folder_cid, file_name)
+
+		if do_repeat && len(uri_path) > 0 {
+			// walk uri_path
+			file_name, uri_path = uri_path[0], uri_path[1:]
+			fmt.Printf("## file_name: %s\n## uri_path: %v\n", file_name, uri_path) // XXX
+
+			continue
+		}
+
+		if do_repeat && len(uri_path) == 0 {
+			folder, err := ipld_storage.read_folder(folder_cid)
+			if err != nil {
+				serve_error("failed reading root folder", err, c)
+				return
+			}
+
+			fmt.Printf("%v\n", folder) // XXX
+			//c.JSON(200, gin.H{"files": folder}) // XXX
+
+			c.HTML(http.StatusOK, "files", gin.H{
+				"files":      folder,
+				"full_path":  fmt.Sprintf("%s/", request_uri),
+				"folder_cid": folder_cid.String(),
+			})
+			break
+		}
+	}
+}
+
+func walk_folder(c *gin.Context, ipld_storage *IPLD_Storage, folder_cid cid.Cid, file_name string) (bool, cid.Cid) {
 	folder, err := ipld_storage.read_folder(folder_cid)
 	if err != nil {
 		serve_error("failed reading root folder", err, c)
-		return
+		return false, cid.Undef
 	}
-
-	// walk uri_path
-	file_name, uri_path := uri_path[0], uri_path[1:]
-	fmt.Printf("file_name: %s\nuri_path: %v\n", file_name, uri_path) // XXX
 
 	obj_lnk, obj_present := folder[file_name]
 	if !obj_present {
 		serve_error("File not found", fmt.Errorf("No such file: %s", file_name), c)
-		return
+		return false, cid.Undef
 	}
 
 	lnk_str := obj_lnk.String()
@@ -162,6 +195,12 @@ func serve_subroot(c *gin.Context) {
 	obj_cid := ParseCID(lnk_str)
 	obj_codec := multicodec.Code(obj_cid.Prefix().Codec)
 	fmt.Printf("Codec: 0x%04x (%s)\n", uint64(obj_codec), obj_codec)
+
+	/*
+		// TODO: Convert to structure and serve as JSON
+		if obj_codec == multicodec.DagJson {
+		}
+	*/
 
 	// Process 'raw' IPLD objects
 	if obj_codec == multicodec.Raw {
@@ -171,24 +210,20 @@ func serve_subroot(c *gin.Context) {
 		data, err := ipld_storage.CARR.Get(context.TODO(), obj_lnk.Binary())
 		if err != nil {
 			serve_error("Failed to read from CAR file", err, c)
-			return
+			return false, cid.Undef
 		}
 
 		c.Data(http.StatusOK, "application/octet-stream", data)
-		return
+		return false, cid.Undef
 	}
 
-	/*
-		// TODO: Another folder to recurse?
-		if obj_codec == multicodec.DagPb {
-		}
-
-		// TODO: Convert to structure and serve as JSON
-		if obj_codec == multicodec.DagJson {
-		}
-	*/
+	if obj_codec == multicodec.DagPb {
+		return true, obj_cid // yes to recursion
+	}
 
 	err = fmt.Errorf("codec: 0x%04x (%s)", uint64(obj_codec), obj_codec)
 	serve_error("Codec not supported", err, c)
-	//c.Abort()
+	//c.Abor()
+
+	return false, cid.Undef
 }

@@ -1,14 +1,5 @@
 # Notes
 
-## To Do (someday)
-
-- [ ] Stream (?) raw codec objects as binary
-- [ ] Support dag-json to just return JSON (update demo.car)
-- [ ] Test sub-folders (update demo.car)
-- [ ] Fix issue with `storage.Has()` CID test call
-- [.] Better error handling
-- [ ] Add logging library to replace `fmt.Printf` calls
-
 ## CAR files
 
 ### Creating CAR file

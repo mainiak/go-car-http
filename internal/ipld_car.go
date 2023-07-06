@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -19,21 +20,17 @@ func LoadCAR(car_fd io.ReaderAt, root_cid cid.Cid) *IPLD_Storage {
 	rcar.Index() // TODO: needed?
 
 	/*
-		// FIXME
 		fmt.Printf("CID: %s\n", root_cid) // XXX
-		ParseCID(root_cid.String()) // XXX
-		cid_exists, err := rcar.Has(context.TODO(), root_cid.String())
-		if err != nil {
-			// WTH ?!
-			// CID: bafybeifg2xqiapzayizkm652rntpqlq5dxxnbq3u7k7uim3dyvwq7cuugy
-			//panic: bad CID key: invalid cid: invalid cid: expected 1 as the cid version number, got: 98
-			panic(err)
-		}
-		if !cid_exists {
-			panic(fmt.Errorf("Your requested CID: %s, is not in CAR file.", root_cid))
-		}
-		// FIXME
+		ParseCID(root_cid.String())       // XXX
 	*/
+	root_cid_lnk := cidlink.Link{root_cid}
+	cid_exists, err := rcar.Has(context.TODO(), root_cid_lnk.Binary())
+	if err != nil {
+		panic(err)
+	}
+	if !cid_exists {
+		panic(fmt.Errorf("Your requested CID: %s, is not in CAR file.", root_cid))
+	}
 
 	//fmt.Printf("%v\n", roots) // XXX
 	fmt.Printf("\nRoots: \n")

@@ -13,7 +13,7 @@ Use at your own risk.
 ```
 go build -o build ./... && \
 ./build/go-car-http \
-bafybeifg2xqiapzayizkm652rntpqlq5dxxnbq3u7k7uim3dyvwq7cuugy \
+bafybeih3eahbwomynpl3pgpzl6dwkgvyishjwlx77wupujo4kacikciosq \
 data/demo_folder.car
 ```
 

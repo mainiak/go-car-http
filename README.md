@@ -17,6 +17,8 @@ bafybeih3eahbwomynpl3pgpzl6dwkgvyishjwlx77wupujo4kacikciosq \
 data/demo_folder.car
 ```
 
+For more see `doc/`.
+
 ## Install
 
 ```

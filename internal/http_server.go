@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-cid"
 )
@@ -26,37 +24,32 @@ func Serve(ipld_storage *IPLD_Storage, root_cid cid.Cid) {
 	// Enabling for all routes
 	r.Use(ipld_mw(ipld_storage, root_cid))
 
-	r.GET("/", serve_index)
+	r.GET("/", serve_root)
 
-	rootURL := r.Group("/root")
+	apiURL := r.Group("/_")
 	{
-		rootURL.GET("/", serve_root)
-		// TODO: support any URL bellow/under '/root' -> path parsing
-	}
-
-	filesURL := r.Group("/files")
-	{
-		filesURL.GET("/", serve_files)
-	}
-
-	infoURL := r.Group("/info")
-	{
-		infoURL.GET("/", serve_info)
+		apiURL.GET("/about", serve_about)
+		apiURL.GET("/files", serve_files)
+		apiURL.GET("/info", serve_info)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
-		// XXX
-		//full_path := c.FullPath()
-		//fmt.Printf("# full_path: '%s'\n", full_path)
-		// XXX
-		request_uri := c.Request.RequestURI
-		//fmt.Printf("# uri: '%s'\n", request_uri) // XXX
+		/*
+			// XXX
+			//full_path := c.FullPath()
+			//fmt.Printf("# full_path: '%s'\n", full_path)
+			// XXX
+			request_uri := c.Request.RequestURI
+			//fmt.Printf("# uri: '%s'\n", request_uri) // XXX
 
-		if strings.HasPrefix(request_uri, "/root/") {
-			serve_subroot(c)
-		} else {
-			serve_not_found(c)
-		}
+			if strings.HasPrefix(request_uri, "/root/") {
+				serve_subroot(c)
+			} else {
+				serve_not_found(c)
+			}
+		*/
+
+		serve_subroot(c)
 	})
 
 	r.Run() // listen and serve on 0.0.0.0:8080

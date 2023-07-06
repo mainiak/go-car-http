@@ -1,6 +1,7 @@
 {{ define "content" }}
+{{ $full_path := .full_path }}
 <p>
-<div>Folder path: <span data-label="full_path">{{ $full_path := .full_path }}</span></div>
+<div>Folder path: <span data-label="full_path">{{ $full_path }}</span></div>
 <div>Folder CID: <span data-label="folder_cid">{{ .folder_cid }}</span></div>
 </p>
 
